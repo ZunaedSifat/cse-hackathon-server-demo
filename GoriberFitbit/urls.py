@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
 from rest_framework import routers
@@ -8,13 +9,15 @@ router.register('users', views.UserViewSet)
 router.register('groups', views.GroupViewSet)
 
 urlpatterns = [
-    path('router/', include(router.urls)),
-    path('hello/', views.HelloView.as_view(), name='hello'),
-    # path('users/', views.UserViewSet, name='groups'),
-    # path('groups/', views.GroupViewSet, name='groups'),
+    # Authentication token
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('signup', views.signup, name='signup'),
-    path('activate/<str:uidb64>/<str:token>', views.activate, name='activate'),
+    # Signup and confirmation
+    path('signup/', views.Signup.as_view(), name='signup'),
+    path('activate/<str:uidb64>/<str:token>/', views.Activate.as_view(), name='activate'),
+
+    path('', views.Home.as_view(), name='home'),
+    path('admin/', admin.site.urls),
+    path('models/', include(router.urls)),
 ]
