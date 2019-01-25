@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
 from django.contrib.auth import login
@@ -11,10 +13,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-
-from GoriberFitbit.api.serializers import UserSerializer, GroupSerializer
+from GoriberFitbit.api.serializers import *
 from .forms import SignupForm
 from .tokens import account_activation_token
+from .models import Profile
 
 
 class Home(APIView):
@@ -25,22 +27,73 @@ class Home(APIView):
     @staticmethod
     def get(request):
         content = {
+            'user_id': request.user.id,
+            'username': request.user.username,
             'message': 'New project!'
         }
+        # serializer_class =
         return Response(content)
+
+
+class ProfileView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def get(request, user_id):
+        profile = Profile.objects.filter(user_id=user_id).first()
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
+
+
+class LeaderBoardView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def get(request):
+        profiles = Profile.objects.order_by('-score')[:5]
+
+        context = {}
+        for (i, p) in enumerate(profiles):
+            context[i+1] = {
+                "username": p.user.username,
+                "score": p.score
+            }
+        return Response(context)
+
+
+class SessionData(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def post(request):
+        print(request.data)
+        dic = json.loads(request.data)
+
+        try:
+            session = Session(
+                distance=dic.distance,
+                leap_count=dic.leap_count,
+                start_time=dic.start_time,
+                end_time=dic.end_time
+            )
+            session.save()
+            return Response({"detail": "success"})
+        except Exception as e:
+            return Response({"detail": "failure"})
 
 
 class Signup(APIView):
 
     @staticmethod
     def post(request):
-        form = SignupForm(request.POST)
+        dic = json.loads(request.data)
+        form = SignupForm(dic)
 
         if form.is_valid():
 
             # Checking if username already exists
             if User.objects.filter(username=form.cleaned_data['username']).first() is not None:
-                return Response({"message": "Username already exists"})
+                return Response({"detail": "Username already exists"})
 
             # Adding user to the database
             user = User(
@@ -60,7 +113,7 @@ class Signup(APIView):
                 'Did you signup?',
                 'Thank you for signing up! Click the link below: \n' +
                 link,
-                'teamhariyegiyechi@gmail.com',
+                'Goriber Fitbit <teamhariyegiyechi@gmail.com>',
                 [form.cleaned_data['email']],
                 fail_silently=False,
             )
