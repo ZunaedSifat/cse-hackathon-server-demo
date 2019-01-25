@@ -26,6 +26,7 @@ class Home(APIView):
 
     @staticmethod
     def get(request):
+        print(str(request.META))
         content = {
             'user_id': request.user.id,
             'username': request.user.username,
@@ -66,27 +67,33 @@ class SessionData(APIView):
 
     @staticmethod
     def post(request):
-        print(request.data)
-        dic = json.loads(request.data)
+        # print(type(request.data))
+        dic = request.data
+        print(request.POST)
+        print(type(dic))
+        print(dic['distance'])
 
         try:
             session = Session(
-                distance=dic.distance,
-                leap_count=dic.leap_count,
-                start_time=dic.start_time,
-                end_time=dic.end_time
+                user_id=request.user.id,
+                distance=dic['distance'],
+                leap_count=dic['leap_count'],
+                start_time=dic['start_time'],
+                end_time=dic['end_time']
             )
             session.save()
             return Response({"detail": "success"})
         except Exception as e:
-            return Response({"detail": "failure"})
+            return Response({"detail": str(e)})
 
 
 class Signup(APIView):
 
     @staticmethod
     def post(request):
-        dic = json.loads(request.data)
+        print(type(request.data))
+        # dic = json.loads(request.data)
+        dic = request.data
         form = SignupForm(dic)
 
         if form.is_valid():
@@ -108,7 +115,7 @@ class Signup(APIView):
             token = account_activation_token.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
             # todo: change link
-            link = 'http://192.168.1.106:8000/activate/' + uid + '/' + token + '/'
+            link = 'https://csehackathon.tahmeedtarek.com/activate/' + uid + '/' + token + '/'
             send_mail(
                 'Did you signup?',
                 'Thank you for signing up! Click the link below: \n' +

@@ -17,7 +17,7 @@ class Profile(models.Model):
 
 
 class Session(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     distance = models.FloatField()
     leap_count = models.FloatField()
     start_time = models.DateTimeField(null=True)
