@@ -18,8 +18,9 @@ urlpatterns = [
     path('activate/<str:uidb64>/<str:token>/', views.Activate.as_view(), name='activate'),
 
     path('', views.Home.as_view(), name='home'),
-    path('profile/<int:user_id>/', views.ProfileView.as_view(), name='profile'),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
     path('data/session/', views.SessionData.as_view(), name='session_data'),
+    path('data/heart/', views.HeartData.as_view(), name='bpm_data'),
     path('leaderboard/', views.LeaderBoardView.as_view(), name='leaderboard'),
 
     path('admin/', admin.site.urls),

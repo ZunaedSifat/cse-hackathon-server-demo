@@ -1,6 +1,3 @@
-import json
-
-from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
 from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
@@ -40,8 +37,8 @@ class ProfileView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
-    def get(request, user_id):
-        profile = Profile.objects.filter(user_id=user_id).first()
+    def get(request):
+        profile = Profile.objects.filter(user_id=request.user.id).first()
         serializer = ProfileSerializer(profile)
         return Response(serializer.data)
 
@@ -82,6 +79,26 @@ class SessionData(APIView):
                 end_time=dic['end_time']
             )
             session.save()
+            return Response({"detail": "success"})
+        except Exception as e:
+            return Response({"detail": str(e)})
+
+
+class HeartData(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def post(request):
+        # print(type(request.data))
+        dic = request.data
+
+        try:
+            heartdata = HeartRate(
+                user_id=request.user.id,
+                bpm=dic['bpm'],
+                timestamp=dic['timestamp']
+            )
+            heartdata.save()
             return Response({"detail": "success"})
         except Exception as e:
             return Response({"detail": str(e)})

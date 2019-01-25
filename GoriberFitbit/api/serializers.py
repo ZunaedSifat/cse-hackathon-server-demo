@@ -15,6 +15,12 @@ class SessionSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('distance', 'leap_count', 'start_time', 'end_time')
 
 
+class HeartRateSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Session
+        fields = ('bmp', 'timestamp')
+
+
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
